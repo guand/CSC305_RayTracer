@@ -1,4 +1,7 @@
 #include "icg_common.h"
+#include "camera.h"
+#include "imageplane.h"
+#include "sphere.h"
 #include <Eigen/Geometry>
 
 #ifndef WITH_OPENCV
@@ -12,8 +15,8 @@ Colour black() { return Colour(0, 0, 0); }
 
 struct MyImage{
     /// Data (not private for convenience)
-    int cols = 640;
-    int rows = 480;
+    int cols = 500;
+    int rows = 500;
     ///  Channel with [0..255] range image (aka uchar)
     cv::Mat image = cv::Mat(rows, cols, CV_8UC3, cv::Scalar(255,255,255));
 
@@ -46,6 +49,10 @@ int main(int, char**){
     MyImage image;
     
     /// TODO: define camera position and sphere position here
+    Sphere sphere(vec3(0,0,1), 0.9f);
+    Camera camera(vec3(0,0,-1));
+
+    ImagePlane plane(vec3(-1,-1,-1), vec3(1,1,1), image.rows, image.cols);
 
     for (int row = 0; row < image.rows; ++row) {
         for (int col = 0; col < image.cols; ++col) {
@@ -54,11 +61,10 @@ int main(int, char**){
             // vec3 d = vec3(1,1,0).normalized();
             // ray3 r(o,d);
             
-            /// EXAMPLE: using "image(row,col)"
-            if(row>100 && row<200 && col>200 && col<500) 
-                image(row,col) = red();
-            if(row>140 && row<240 && col>240 && col<340) 
-                image(row,col) = Colour(0,0,255);
+            vec3 pt = plane.generatePixelPos(row, col);
+            ray3 ray = camera.generateRay(pt);
+
+            image(row, col) = (sphere.intersectRay(ray)) ? white() : black();
        }
     }
     
