@@ -19,31 +19,28 @@ public:
         _mRadius(r)
     { }
 
-    inline bool intersectRay(ParametrizedLine<float, 3> const& ray)
+    inline double intersectRay(ParametrizedLine<float, 3> const& ray)
     {
         // Intersect against the plane first to compute the t value
 //        float d = (-_mCentre).dot(_mNormal);
 //        float t = -(ray.origin().dot(_mNormal) + d) / (ray.direction().dot(_mNormal));
 
 
-        float a = ray.direction().dot(ray.direction());
-        float b = ray.direction().dot(ray.origin() - _mCentre);
-        float c = (ray.origin() - _mCentre).dot(ray.origin() - _mCentre) - (_mRadius * _mRadius);
+        double a = ray.direction().dot(ray.direction());
+        double b = ray.direction().dot(ray.origin() - _mCentre);
+        double c = (ray.origin() - _mCentre).dot(ray.origin() - _mCentre) - (_mRadius * _mRadius);
 
-        float discriminant = (b * b) - (a * c);
+        double discriminant = (b * b) - (a * c);
 
         if(discriminant < 0)
         {
-            return false;
+            return -1;
         }
-        // check this code later
-        float t = (-b - sqrt(discriminant)) / 2;
+        // check this code later, why the divisor is 2 and doesn't need to be 2*a or why it doesn't make a difference
+        double t0 = (-b - sqrt(discriminant)) / a;
+        double t1 = (-b + sqrt(discriminant)) / a;
 
-        vec3 hitPoint = ray.pointAt(t);
-        vec3 dist = hitPoint - _mCentre;
-
-
-        return (dist.norm() < _mRadius) ? true : false;
+        return t0;
     }
 
 private:

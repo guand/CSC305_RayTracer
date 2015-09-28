@@ -2,6 +2,7 @@
 #include "camera.h"
 #include "imageplane.h"
 #include "sphere.h"
+#include "light.h"
 #include <Eigen/Geometry>
 
 #ifndef WITH_OPENCV
@@ -49,7 +50,8 @@ int main(int, char**){
     MyImage image;
     
     /// TODO: define camera position and sphere position here
-    Sphere sphere(vec3(0,0,1), 0.9f);
+    Sphere sphere(vec3(0,0,1), 0.5);
+    Sphere sphere1(vec3(0,1,1), 0.5);
     Camera camera(vec3(0,0,-1));
 
     ImagePlane plane(vec3(-1,-1,-1), vec3(1,1,1), image.rows, image.cols);
@@ -63,8 +65,9 @@ int main(int, char**){
             
             vec3 pt = plane.generatePixelPos(row, col);
             ray3 ray = camera.generateRay(pt);
+            if(sphere.intersectRay(ray) <  0 && sphere.intersectRay(ray) != -1)
+                image(row, col) = red();
 
-            image(row, col) = (sphere.intersectRay(ray)) ? white() : black();
        }
     }
     
