@@ -11,41 +11,38 @@ using namespace Eigen;
 class Sphere
 {
 public:
+    typedef cv::Vec3b Colour;
+
     Sphere();
 
-    Sphere(vec3 const& c, float r) :
+    Sphere(vec3 const& c, float r, Colour colour) :
         _mCentre(c),
         _mNormal(c),
-        _mRadius(r)
+        _mRadius(r),
+        _mColour(colour)
     { }
 
-    inline double intersectRay(ParametrizedLine<float, 3> const& ray)
-    {
-        // Intersect against the plane first to compute the t value
-//        float d = (-_mCentre).dot(_mNormal);
-//        float t = -(ray.origin().dot(_mNormal) + d) / (ray.direction().dot(_mNormal));
+    Colour getColour() { return this->_mColour; }
 
+    float intersectRay(ParametrizedLine<float, 3> const& ray);
+    vec3 getIntersectPoint(ParametrizedLine<float, 3> const &ray, float pt);
+    ParametrizedLine<float, 3> getNormal(vec3 sphereHitPt);
 
-        double a = ray.direction().dot(ray.direction());
-        double b = ray.direction().dot(ray.origin() - _mCentre);
-        double c = (ray.origin() - _mCentre).dot(ray.origin() - _mCentre) - (_mRadius * _mRadius);
-
-        double discriminant = (b * b) - (a * c);
-
-        if(discriminant < 0)
-        {
-            return -1;
-        }
-        // check this code later, why the divisor is 2 and doesn't need to be 2*a or why it doesn't make a difference
-        double t0 = (-b - sqrt(discriminant)) / a;
-        double t1 = (-b + sqrt(discriminant)) / a;
-
-        return t0;
-    }
+    float getKd() { return _kd; }
+    float getKa() { return _ka; }
+    float getKs() { return _ks; }
+    float getN() { return _n; }
 
 private:
     float _mRadius;
     vec3 _mCentre, _mNormal;
+    float _kd = 1;
+    float _ka = 0;
+    float _ks = 0.7;
+    float _pr = 1;
+    float _n = 5;
+    float _IOR = 1;
+    Colour _mColour;
 };
 
 #endif // SPHERE_H

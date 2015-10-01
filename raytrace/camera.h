@@ -15,14 +15,9 @@ public:
     Camera(vec3 const& eye) : _mEye(eye) { }
 
     // Given coordinates of a pixel in the view plane, we generate its primary ray
-    ParametrizedLine<float, 3> generateRay(vec3 const& point){
-        typedef ParametrizedLine<float, 3> ray3;
+    ParametrizedLine<float, 3> generateRay(vec3 const& point);
 
-        vec3 origin = _mEye;
-        vec3 direction = _mEye - point;
-        direction.normalize();
-        return ray3(origin, direction);
-    }
+    ParametrizedLine<float, 3> rayToCamera(vec3 const& point);
 
 private:
     vec3 _mEye; // The position of the camera.

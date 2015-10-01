@@ -4,13 +4,16 @@
 #include "sphere.h"
 #include "light.h"
 #include <Eigen/Geometry>
+#include <math.h>
+
 
 #ifndef WITH_OPENCV
     #error OpenCV required for this exercise
 #endif
 
 typedef cv::Vec3b Colour;
-Colour red() { return Colour(255, 0, 0); }
+Colour red() { return Colour(0, 0, 255); }
+Colour blue() { return Colour(255, 0, 0); }
 Colour white() { return Colour(255, 255, 255); }
 Colour black() { return Colour(0, 0, 0); }
 
@@ -50,10 +53,9 @@ int main(int, char**){
     MyImage image;
     
     /// TODO: define camera position and sphere position here
-    Sphere sphere(vec3(0,0,1), 0.5);
-    Sphere sphere1(vec3(0,1,1), 0.5);
+    Sphere sphere(vec3(0,0,1), 0.5, blue());
     Camera camera(vec3(0,0,-1));
-
+    Light light(vec3(5,-3,-4), white());
     ImagePlane plane(vec3(-1,-1,-1), vec3(1,1,1), image.rows, image.cols);
 
     for (int row = 0; row < image.rows; ++row) {
@@ -66,7 +68,27 @@ int main(int, char**){
             vec3 pt = plane.generatePixelPos(row, col);
             ray3 ray = camera.generateRay(pt);
             if(sphere.intersectRay(ray) <  0 && sphere.intersectRay(ray) != -1)
-                image(row, col) = red();
+            {
+                image(row, col) = sphere.getColour();
+                float spherePt = sphere.intersectRay(ray);
+                vec3 sphereHitPt = sphere.getIntersectPoint(ray, spherePt);
+                ray3 rayToLight = light.generateRay(sphereHitPt);
+                ray3 sphereNormal = sphere.getNormal(sphereHitPt);
+                float dotCalculation = sphereNormal.direction().dot(rayToLight.direction());
+                float dot = dotCalculation < 0 ? 0.0f : dotCalculation;
+                ray3 rayToCamera = camera.rayToCamera(sphereHitPt);
+                vec3 reflectedRayOfLight = 2 * (rayToLight.direction().dot(sphereNormal.direction())) * sphereNormal.direction() - rayToLight.direction();
+                cv::Vec3b diffuseComponent = sphere.getKd() * sphere.getColour() * dot;
+
+                cv::Vec3b ambientComponent = sphere.getKa() * sphere.getColour();
+                cv::Vec3b specularComponent = sphere.getKs() * light.getColour() * pow(reflectedRayOfLight.dot(rayToCamera.direction()),sphere.getN());
+
+
+                cv::Vec3b illumination = diffuseComponent + specularComponent + ambientComponent;
+                std::cout << dot << std::endl;
+                image(row, col) = illumination;
+
+            }
 
        }
     }

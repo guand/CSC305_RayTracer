@@ -5,6 +5,7 @@
 #include "icg_common.h"
 #include <Eigen/Geometry>
 
+using namespace Eigen;
 class Light
 {
 public:
@@ -16,6 +17,10 @@ public:
         _mPosition(position),
         _mColour(colour)
     { }
+
+    ParametrizedLine<float, 3> generateRay(vec3 const& point);
+
+    Colour getColour() { return _mColour; }
 
 private:
     Colour _mColour;
