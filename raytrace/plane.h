@@ -14,10 +14,10 @@ class Plane: public Object
 public:
     typedef cv::Vec3b Colour;
 
-    Plane(vec3 const& position, Colour const& colour) :
+    Plane(vec3 const& position, vec3 const& normal, Colour const& colour) :
         _mPosition(position),
-        _mNormal(position),
-        _mColour(colour)
+        _mNormal(normal),
+        Object(colour)
     { }
 
     ~Plane();
@@ -25,14 +25,12 @@ public:
     bool intersectRay(ParametrizedLine<float, 3> const &ray);
 
     // getter
-    Colour getColour() { return _mColour; }
     vec3 getPosition() { return _mPosition; }
 
 
 private:
     vec3 _mPosition;
     vec3 _mNormal;
-    Colour _mColour;
 };
 
 #endif // PLANE_H

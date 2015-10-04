@@ -14,11 +14,11 @@ class Sphere: public Object
 public:
     typedef cv::Vec3b Colour;
 
-    Sphere(vec3 const& c, float r, Colour colour) :
+    Sphere(vec3 const& c, float const& r, Colour const& colour) :
         _mCentre(c),
         _mNormal(c),
         _mRadius(r),
-        _mColour(colour)
+        Object(colour)
     { }
 
     ~Sphere();
@@ -29,14 +29,12 @@ public:
     ParametrizedLine<float, 3> getNormal(vec3 sphereHitPt);
 
     // getters
-    Colour getColour() { return _mColour; }
     vec3 getCentre() { return _mCentre; }
     float getRadius() { return _mRadius; }
 
 private:
     float _mRadius;
     vec3 _mCentre, _mNormal;
-    Colour _mColour;
 };
 
 #endif // SPHERE_H

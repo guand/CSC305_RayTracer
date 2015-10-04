@@ -62,7 +62,7 @@ int main(int, char**){
 
     /// Define sphere and plane
     Sphere sphere(vec3(0,0,1), 0.5, blue());
-    Plane floorPlane(vec3(-1,0,0), red());
+    Plane floorPlane(vec3(0, 0, 0), vec3(1, 0, 0), red());
     std::vector<Object*> scene;
     scene.push_back(&floorPlane);
     scene.push_back(&sphere);
@@ -72,6 +72,11 @@ int main(int, char**){
             
             vec3 pt = plane.generatePixelPos(row, col);
             ray3 ray = camera.generateRay(pt);
+            std::vector<float> intersections;
+//            for(int i = 0; i < scene.size(); ++i)
+//            {
+//                intersections.push_back(scene.at(i)->);
+//            }
             if(floorPlane.intersectRay(ray))
             {
                 image(row, col) = floorPlane.getColour();
@@ -83,15 +88,10 @@ int main(int, char**){
                 vec3 sphereHitPt = sphere.getIntersectPoint(ray, spherePt);
                 ray3 rayToLight = light.generateRay(sphereHitPt);
                 ray3 sphereNormal = sphere.getNormal(sphereHitPt);
-                float dotCalculation = sphereNormal.direction().dot(rayToLight.direction());
-                float dot = dotCalculation < 0 ? 0.0f : dotCalculation;
                 ray3 rayToCamera = camera.rayToCamera(sphereHitPt);
-                vec3 reflectedRayOfLight = 2 * (rayToLight.direction().dot(sphereNormal.direction())) * sphereNormal.direction() - rayToLight.direction();
-                cv::Vec3b diffuseComponent = sphere.getKd() * light.getColour() * dot;
-                cv::Vec3b ambientComponent = sphere.getKa() * sphere.getColour();
-                cv::Vec3b specularComponent = sphere.getKs() * light.getColour() * pow(reflectedRayOfLight.dot(rayToCamera.direction()),sphere.getN());
-
-
+                cv::Vec3b diffuseComponent = sphere.diffuse(sphereNormal, rayToLight, light.getColour());
+                cv::Vec3b ambientComponent = sphere.ambient();
+                cv::Vec3b specularComponent = sphere.specular(sphereNormal, rayToLight, rayToCamera, light.getColour());
                 cv::Vec3b illumination = diffuseComponent + specularComponent + ambientComponent;
                 image(row, col) = illumination;
 

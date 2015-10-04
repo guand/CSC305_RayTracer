@@ -4,8 +4,8 @@ ImagePlane::~ImagePlane() {}
 
 vec3 ImagePlane::generatePixelPos(int i, int j)
 {
-    float u = _l + (_r - _l) * (i + 0.5f) / _mRows;
-    float v = _b + (_t - _b) * (j + 0.5f) / _mCols;
+    float u = this->_l + (this->_r - this->_l) * (i + 0.5f) / this->_mRows;
+    float v = this->_b + (this->_t - this->_b) * (j + 0.5f) / this->_mCols;
     return vec3(u, v, 0);
 }
 

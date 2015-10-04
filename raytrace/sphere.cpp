@@ -5,8 +5,8 @@ Sphere::~Sphere() {}
 bool Sphere::intersectRay(ParametrizedLine<float, 3> const &ray)
 {
     float a = ray.direction().dot(ray.direction());
-    float b = ray.direction().dot(ray.origin() - _mCentre);
-    float c = (ray.origin() - _mCentre).dot(ray.origin() - _mCentre) - (_mRadius * _mRadius);
+    float b = ray.direction().dot(ray.origin() - this->_mCentre);
+    float c = (ray.origin() - this->_mCentre).dot(ray.origin() - this->_mCentre) - (this->_mRadius * this->_mRadius);
 
     float discriminant = (b * b) - (a * c);
 
@@ -24,8 +24,8 @@ bool Sphere::intersectRay(ParametrizedLine<float, 3> const &ray)
 float Sphere::intersectRayValue(ParametrizedLine<float, 3> const &ray)
 {
     float a = ray.direction().dot(ray.direction());
-    float b = ray.direction().dot(ray.origin() - _mCentre);
-    float c = (ray.origin() - _mCentre).dot(ray.origin() - _mCentre) - (_mRadius * _mRadius);
+    float b = ray.direction().dot(ray.origin() - this->_mCentre);
+    float c = (ray.origin() - this->_mCentre).dot(ray.origin() - this->_mCentre) - (this->_mRadius * this->_mRadius);
 
     float discriminant = (b * b) - (a * c);
 
@@ -51,7 +51,7 @@ vec3 Sphere::getIntersectPoint(ParametrizedLine<float, 3> const &ray, float pt)
 ParametrizedLine<float, 3> Sphere::getNormal(vec3 pt)
 {
     typedef ParametrizedLine<float, 3> ray3;
-    vec3 origin = _mCentre;
+    vec3 origin = this->_mCentre;
     vec3 direction = origin - pt;
     direction.normalize();
     return ray3(origin, direction);
