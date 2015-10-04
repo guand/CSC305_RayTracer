@@ -1,9 +1,6 @@
 #include "light.h"
 
-Light::Light()
-{
-
-}
+Light::~Light() {}
 
 ParametrizedLine<float, 3> Light::generateRay(vec3 const& point)
 {

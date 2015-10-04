@@ -1,9 +1,6 @@
 #include "camera.h"
 
-Camera::Camera()
-{
-
-}
+Camera::~Camera() {}
 
 ParametrizedLine<float, 3> Camera::generateRay(vec3 const& point)
 {

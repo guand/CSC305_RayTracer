@@ -7,8 +7,6 @@
 class ImagePlane
 {
 public:
-    ImagePlane();
-
     ImagePlane(vec3 const& llCorner, // The lower-left corner (l, b, 0)
                vec3 const& urCorner, // The upper-right corner (r, t, 0)
                int  const& xRes, int const& yRes) : // The dimensions of the image
@@ -19,6 +17,8 @@ public:
         _mRows(xRes),
         _mCols(yRes)
     { }
+
+    ~ImagePlane();
 
     vec3 generatePixelPos(int i, int j);
 

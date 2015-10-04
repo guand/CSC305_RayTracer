@@ -3,17 +3,16 @@
 
 #pragma once
 #include "icg_common.h"
+#include "object.h"
 #include <Eigen/Geometry>
 #include <math.h>
 
 using namespace Eigen;
 
-class Sphere
+class Sphere: public Object
 {
 public:
     typedef cv::Vec3b Colour;
-
-    Sphere();
 
     Sphere(vec3 const& c, float r, Colour colour) :
         _mCentre(c),
@@ -22,26 +21,21 @@ public:
         _mColour(colour)
     { }
 
-    Colour getColour() { return this->_mColour; }
+    ~Sphere();
 
-    float intersectRay(ParametrizedLine<float, 3> const& ray);
+    bool intersectRay(ParametrizedLine<float, 3> const& ray);
+    float intersectRayValue(ParametrizedLine<float, 3> const& ray);
     vec3 getIntersectPoint(ParametrizedLine<float, 3> const &ray, float pt);
     ParametrizedLine<float, 3> getNormal(vec3 sphereHitPt);
 
-    float getKd() { return _kd; }
-    float getKa() { return _ka; }
-    float getKs() { return _ks; }
-    float getN() { return _n; }
+    // getters
+    Colour getColour() { return _mColour; }
+    vec3 getCentre() { return _mCentre; }
+    float getRadius() { return _mRadius; }
 
 private:
     float _mRadius;
     vec3 _mCentre, _mNormal;
-    float _kd = 1;
-    float _ka = 0;
-    float _ks = 0.7;
-    float _pr = 1;
-    float _n = 5;
-    float _IOR = 1;
     Colour _mColour;
 };
 

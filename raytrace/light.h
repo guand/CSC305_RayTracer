@@ -11,12 +11,12 @@ class Light
 public:
     typedef cv::Vec3b Colour;
 
-    Light();
-
     Light(vec3 const& position, Colour const& colour) :
         _mPosition(position),
         _mColour(colour)
     { }
+
+    ~Light();
 
     ParametrizedLine<float, 3> generateRay(vec3 const& point);
 

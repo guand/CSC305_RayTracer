@@ -1,11 +1,27 @@
 #include "sphere.h"
 
-Sphere::Sphere()
-{
+Sphere::~Sphere() {}
 
+bool Sphere::intersectRay(ParametrizedLine<float, 3> const &ray)
+{
+    float a = ray.direction().dot(ray.direction());
+    float b = ray.direction().dot(ray.origin() - _mCentre);
+    float c = (ray.origin() - _mCentre).dot(ray.origin() - _mCentre) - (_mRadius * _mRadius);
+
+    float discriminant = (b * b) - (a * c);
+
+    if(discriminant < 0)
+    {
+        return false;
+    }
+
+    float t0 = (-b - sqrt(discriminant));
+    float t1 = (-b + sqrt(discriminant));
+
+    return true;
 }
 
-float Sphere::intersectRay(ParametrizedLine<float, 3> const &ray)
+float Sphere::intersectRayValue(ParametrizedLine<float, 3> const &ray)
 {
     float a = ray.direction().dot(ray.direction());
     float b = ray.direction().dot(ray.origin() - _mCentre);

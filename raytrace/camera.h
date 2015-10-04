@@ -10,9 +10,10 @@ using namespace Eigen;
 class Camera
 {
 public:
-    Camera();
     // we only need the position of the camera.
-    Camera(vec3 const& eye) : _mEye(eye) { }
+    Camera(vec3 const& eye) : _mEye(eye) {}
+
+    ~Camera();
 
     // Given coordinates of a pixel in the view plane, we generate its primary ray
     ParametrizedLine<float, 3> generateRay(vec3 const& point);

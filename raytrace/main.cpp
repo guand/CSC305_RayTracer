@@ -3,6 +3,8 @@
 #include "imageplane.h"
 #include "sphere.h"
 #include "light.h"
+#include "plane.h"
+#include "object.h"
 #include <Eigen/Geometry>
 #include <math.h>
 
@@ -52,25 +54,32 @@ int main(int, char**){
     
     MyImage image;
     
-    /// TODO: define camera position and sphere position here
-    Sphere sphere(vec3(0,0,1), 0.5, blue());
+    /// Define camera, light, and image plane
+
     Camera camera(vec3(0,0,-1));
     Light light(vec3(5,-3,-4), white());
     ImagePlane plane(vec3(-1,-1,-1), vec3(1,1,1), image.rows, image.cols);
 
+    /// Define sphere and plane
+    Sphere sphere(vec3(0,0,1), 0.5, blue());
+    Plane floorPlane(vec3(-1,0,0), red());
+    std::vector<Object*> scene;
+    scene.push_back(&floorPlane);
+    scene.push_back(&sphere);
+
     for (int row = 0; row < image.rows; ++row) {
         for (int col = 0; col < image.cols; ++col) {
-            /// TODO: build primary rays
-            // vec3 o = vec3(0,0,0);
-            // vec3 d = vec3(1,1,0).normalized();
-            // ray3 r(o,d);
             
             vec3 pt = plane.generatePixelPos(row, col);
             ray3 ray = camera.generateRay(pt);
-            if(sphere.intersectRay(ray) <  0 && sphere.intersectRay(ray) != -1)
+            if(floorPlane.intersectRay(ray))
+            {
+                image(row, col) = floorPlane.getColour();
+            }
+            if(sphere.intersectRay(ray))
             {
                 image(row, col) = sphere.getColour();
-                float spherePt = sphere.intersectRay(ray);
+                float spherePt = sphere.intersectRayValue(ray);
                 vec3 sphereHitPt = sphere.getIntersectPoint(ray, spherePt);
                 ray3 rayToLight = light.generateRay(sphereHitPt);
                 ray3 sphereNormal = sphere.getNormal(sphereHitPt);
@@ -78,18 +87,15 @@ int main(int, char**){
                 float dot = dotCalculation < 0 ? 0.0f : dotCalculation;
                 ray3 rayToCamera = camera.rayToCamera(sphereHitPt);
                 vec3 reflectedRayOfLight = 2 * (rayToLight.direction().dot(sphereNormal.direction())) * sphereNormal.direction() - rayToLight.direction();
-                cv::Vec3b diffuseComponent = sphere.getKd() * sphere.getColour() * dot;
-
+                cv::Vec3b diffuseComponent = sphere.getKd() * light.getColour() * dot;
                 cv::Vec3b ambientComponent = sphere.getKa() * sphere.getColour();
                 cv::Vec3b specularComponent = sphere.getKs() * light.getColour() * pow(reflectedRayOfLight.dot(rayToCamera.direction()),sphere.getN());
 
 
                 cv::Vec3b illumination = diffuseComponent + specularComponent + ambientComponent;
-                std::cout << dot << std::endl;
                 image(row, col) = illumination;
 
             }
-
        }
     }
     

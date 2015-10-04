@@ -1,9 +1,6 @@
 #include "imageplane.h"
 
-ImagePlane::ImagePlane()
-{
-
-}
+ImagePlane::~ImagePlane() {}
 
 vec3 ImagePlane::generatePixelPos(int i, int j)
 {
