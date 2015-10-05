@@ -24,6 +24,7 @@ public:
     ~Sphere();
 
     bool intersectRay(ParametrizedLine<float, 3> const& ray);
+    bool intersectRayForShadow(ParametrizedLine<float, 3> const &ray);
     float intersectRayValue(ParametrizedLine<float, 3> const& ray);
     vec3 getIntersectPoint(ParametrizedLine<float, 3> const &ray, float pt);
     ParametrizedLine<float, 3> getNormal(vec3 sphereHitPt);

@@ -21,6 +21,31 @@ bool Sphere::intersectRay(ParametrizedLine<float, 3> const &ray)
     return true;
 }
 
+bool Sphere::intersectRayForShadow(ParametrizedLine<float, 3> const &ray)
+{
+    float a = ray.direction().dot(ray.direction());
+    float b = ray.direction().dot(ray.origin() - this->_mCentre);
+    float c = (ray.origin() - this->_mCentre).dot(ray.origin() - this->_mCentre) - (this->_mRadius * this->_mRadius);
+
+    float discriminant = (b * b) - (a * c);
+
+    if(discriminant < 0)
+    {
+        return false;
+    }
+
+    float t0 = (-b - sqrt(discriminant));
+    float t1 = (-b + sqrt(discriminant));
+    if(t1 > t0)
+        t0 = t1;
+    if(t0 <= 0)
+    {
+        return false;
+    }
+
+    return true;
+}
+
 float Sphere::intersectRayValue(ParametrizedLine<float, 3> const &ray)
 {
     float a = ray.direction().dot(ray.direction());

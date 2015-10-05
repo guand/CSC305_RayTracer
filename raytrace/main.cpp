@@ -27,8 +27,8 @@ Coefficient objectBlack() { return Coefficient(0.0f, 0.0f, 0.0f); }
 
 struct MyImage{
     /// Data (not private for convenience)
-    int cols = 900;
-    int rows = 900;
+    int cols = 600;
+    int rows = 600;
     ///  Channel with [0..255] range image (aka uchar)
     cv::Mat image = cv::Mat(rows, cols, CV_8UC3, cv::Scalar(255,255,255));
 
@@ -100,20 +100,20 @@ int main(int, char**){
     /// Define camera, light, and image plane
 
     Camera camera(vec3(0,-1,-6));
-    Light light(vec3(-4, 4, 5), white());
+    Light light(vec3(-4.0f, 3.0f, 1.0f), white());
     ImagePlane plane(vec3(-2,-2,-1), vec3(2,2,1), image.rows, image.cols);
 
     /// Define sphere and plane
     Sphere sphere(vec3(0,0,1), 0.4f, Coefficient(0.5f, 0.0f, 0.0f));
-    Sphere sphere2(vec3(0,1,1), 0.4f, Coefficient(0.5f, 0.25f, 0.25f));
-    Plane floorPlane(vec3(1, 0, 0), vec3(1.5f, 0, 0), Coefficient(0.0f, 0.0f, 0.4f));
+    Sphere sphere2(vec3(-1,0,1), 0.4f, Coefficient(0.5f, 0.25f, 0.25f));
+    Plane floorPlane(vec3(1, 0, 0), vec3(1.6f, 0, 0), Coefficient(0.0f, 0.0f, 0.4f));
     floorPlane.setKd(Coefficient(0.2f, 0.2f, 0.2f));
     vector<Object*> scene;
     scene.push_back(dynamic_cast<Object*>(&floorPlane));
     scene.push_back(dynamic_cast<Object*>(&sphere));
     scene.push_back(dynamic_cast<Object*>(&sphere2));
     float accuracy = 0.00000001;
-
+    float shade = 0.5f;
     for (int row = 0; row < image.rows; ++row) {
         for (int col = 0; col < image.cols; ++col) {
             image(row, col) = black();
@@ -135,27 +135,61 @@ int main(int, char**){
                 {
                     if(Sphere* c = dynamic_cast<Sphere*>(scene[indexPriorityOfObject]))
                     {
+                        bool shadow = false;
                         float spherePt = c->intersectRayValue(ray);
                         vec3 sphereHitPt = c->getIntersectPoint(ray, spherePt);
                         ray3 rayToLight = light.generateRay(sphereHitPt);
+                        for(int i = 0; i < scene.size(); ++i)
+                        {
+                            if(Sphere* e = dynamic_cast<Sphere*>(scene[i]))
+                            {
+                                if(e != c)
+                                {
+                                    if(e->intersectRayForShadow(rayToLight))
+                                    {
+                                        shadow = true;
+                                    }
+                                }
+
+                            }
+                        }
                         ray3 sphereNormal = c->getNormal(sphereHitPt);
                         ray3 rayToCamera = camera.rayToCamera(sphereHitPt);
                         cv::Vec3b ambientComponent = c->ambient(light.getColour());
                         cv::Vec3b diffuseComponent = c->diffuse(sphereNormal, rayToLight, light.getColour());
                         cv::Vec3b specularComponent = c->specular(sphereNormal, rayToLight, rayToCamera, light.getColour());
                         cv::Vec3b illumination = diffuseComponent + ambientComponent + specularComponent;
+                        if(shadow)
+                        {
+                            illumination = ambientComponent * shade;
+                        }
                         image(row, col) = illumination;
                     } else if(Plane* b = dynamic_cast<Plane*>(scene[indexPriorityOfObject]))
                     {
+                        bool shadow = false;
                         float planePt = b->intersectRayValue(ray);
                         vec3 planeHitPt = b->getIntersectPoint(ray, planePt);
                         ray3 rayToLight = light.generateRay(planeHitPt);
+                        for(int i = 0; i < scene.size(); ++i)
+                        {
+                            if(Sphere* d = dynamic_cast<Sphere*>(scene[i]))
+                            {
+                                if(d->intersectRay(rayToLight))
+                                {
+                                    shadow = true;
+                                }
+                            }
+                        }
                         ray3 planeNormal = b->getNormal(planeHitPt);
                         ray3 rayToCamera = camera.rayToCamera(planeHitPt);
                         cv::Vec3b ambientComponent = b->ambient(light.getColour());
                         cv::Vec3b diffuseComponent = b->diffuse(planeNormal, rayToLight, light.getColour());
-                        cv::Vec3b specularComponent = b->specular(planeNormal, rayToLight, rayToCamera, light.getColour());
+//                        cv::Vec3b specularComponent = b->specular(planeNormal, rayToLight, rayToCamera, light.getColour());
                         cv::Vec3b illumination = diffuseComponent + ambientComponent;
+                        if(shadow)
+                        {
+                            illumination = ambientComponent * shade;
+                        }
                         image(row, col) = illumination;
                     }
                 }

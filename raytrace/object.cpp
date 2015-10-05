@@ -1,3 +1,4 @@
+
 #include "object.h"
 
 Colour Object::ambient(Colour lightColour)
