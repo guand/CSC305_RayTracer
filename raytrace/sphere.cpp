@@ -37,7 +37,7 @@ float Sphere::intersectRayValue(ParametrizedLine<float, 3> const &ray)
     float t0 = (-b - sqrt(discriminant));
     float t1 = (-b + sqrt(discriminant));
 
-    if(t1 < t0)
+    if(t1 > t0)
         t0 = t1;
     return t0;
 }
@@ -52,7 +52,7 @@ ParametrizedLine<float, 3> Sphere::getNormal(vec3 pt)
 {
     typedef ParametrizedLine<float, 3> ray3;
     vec3 origin = this->_mCentre;
-    vec3 direction = origin - pt;
+    vec3 direction = pt - origin;
     direction.normalize();
     return ray3(origin, direction);
 }

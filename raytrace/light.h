@@ -20,6 +20,7 @@ public:
 
     ParametrizedLine<float, 3> generateRay(vec3 const& point);
 
+    /// getter
     Colour getColour() { return _mColour; }
 
 private:

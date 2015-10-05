@@ -14,15 +14,21 @@
 #endif
 
 typedef cv::Vec3b Colour;
+typedef cv::Vec3f Coefficient;
 Colour red() { return Colour(0, 0, 255); }
 Colour blue() { return Colour(255, 0, 0); }
 Colour white() { return Colour(255, 255, 255); }
 Colour black() { return Colour(0, 0, 0); }
 
+Coefficient objectRed() { return Coefficient(0.0f, 0.0f, 1.0f); }
+Coefficient objectBlue() { return Coefficient(1.0f, 0.0f, 0.0f); }
+Coefficient objectWhite() { return Coefficient(1.0f, 1.0f, 1.0f); }
+Coefficient objectBlack() { return Coefficient(0.0f, 0.0f, 0.0f); }
+
 struct MyImage{
     /// Data (not private for convenience)
-    int cols = 500;
-    int rows = 500;
+    int cols = 900;
+    int rows = 900;
     ///  Channel with [0..255] range image (aka uchar)
     cv::Mat image = cv::Mat(rows, cols, CV_8UC3, cv::Scalar(255,255,255));
 
@@ -46,6 +52,43 @@ struct MyImage{
     }
 };
 
+int priorityObjectIndex(vector<float> intersectionObjects)
+{
+    int minimumValue;
+    if(intersectionObjects.size() == 0)
+    {
+        return -1;
+    } else if(intersectionObjects.size() == 1)
+    {
+        if(intersectionObjects.at(0) > 0)
+        {
+            return 0;
+        }
+
+        return -1;
+    }
+    float max = 0;
+    for(int i = 0; i < intersectionObjects.size(); ++i)
+    {
+        if(max < intersectionObjects.at(i)) {
+            max = intersectionObjects.at(i);
+        }
+    }
+    if(max > 0)
+    {
+        for(int i = 0; i < intersectionObjects.size(); ++i)
+        {
+            if(intersectionObjects.at(i) > 0 && intersectionObjects.at(i) <= max)
+            {
+                max = intersectionObjects.at(i);
+                minimumValue = i;
+            }
+        }
+        return minimumValue;
+    }
+    return -1;
+}
+
 
 int main(int, char**){
     /// Rays and vectors represented with Eigen
@@ -56,46 +99,84 @@ int main(int, char**){
     
     /// Define camera, light, and image plane
 
-    Camera camera(vec3(0,0,-1));
-    Light light(vec3(5,-3,-4), white());
+    Camera camera(vec3(0,0,-2));
+    Light light(vec3(-4, -4, 5), white());
     ImagePlane plane(vec3(-1,-1,-1), vec3(1,1,1), image.rows, image.cols);
 
     /// Define sphere and plane
-    Sphere sphere(vec3(0,0,1), 0.5, blue());
-    Plane floorPlane(vec3(0, 0, 0), vec3(1, 0, 0), red());
-    std::vector<Object*> scene;
+    Sphere sphere(vec3(0,0,1), 0.4f, Coefficient(0.5f, 0.0f, 0.0f));
+    Plane floorPlane(vec3(1, 0, 0), vec3(1.5f, 0, 0), Coefficient(0.0f, 0.0f, 0.5f));
+    vector<Object*> scene;
     scene.push_back(&floorPlane);
     scene.push_back(&sphere);
+    float accuracy = 0.00000001;
 
     for (int row = 0; row < image.rows; ++row) {
         for (int col = 0; col < image.cols; ++col) {
-            
+            image(row, col) = black();
             vec3 pt = plane.generatePixelPos(row, col);
             ray3 ray = camera.generateRay(pt);
-            std::vector<float> intersections;
-//            for(int i = 0; i < scene.size(); ++i)
-//            {
-//                intersections.push_back(scene.at(i)->);
-//            }
-            if(floorPlane.intersectRay(ray))
+            vector<float> intersections;
+            for(int i = 0; i < scene.size(); ++i)
             {
-                image(row, col) = floorPlane.getColour();
+                intersections.push_back(scene.at(i)->intersectRayValue(ray));
             }
-            if(sphere.intersectRay(ray))
-            {
-                image(row, col) = sphere.getColour();
-                float spherePt = sphere.intersectRayValue(ray);
-                vec3 sphereHitPt = sphere.getIntersectPoint(ray, spherePt);
-                ray3 rayToLight = light.generateRay(sphereHitPt);
-                ray3 sphereNormal = sphere.getNormal(sphereHitPt);
-                ray3 rayToCamera = camera.rayToCamera(sphereHitPt);
-                cv::Vec3b diffuseComponent = sphere.diffuse(sphereNormal, rayToLight, light.getColour());
-                cv::Vec3b ambientComponent = sphere.ambient();
-                cv::Vec3b specularComponent = sphere.specular(sphereNormal, rayToLight, rayToCamera, light.getColour());
-                cv::Vec3b illumination = diffuseComponent + specularComponent + ambientComponent;
-                image(row, col) = illumination;
 
+            int indexPriorityOfObject = priorityObjectIndex(intersections);
+            if(indexPriorityOfObject == -1)
+            {
+                image(row, col) = black();
+            } else
+            {
+                if(intersections.at(indexPriorityOfObject) > accuracy)
+                {
+                    if(Sphere* c = dynamic_cast<Sphere*>(scene[indexPriorityOfObject]))
+                    {
+                        float spherePt = c->intersectRayValue(ray);
+                        vec3 sphereHitPt = c->getIntersectPoint(ray, spherePt);
+                        ray3 rayToLight = light.generateRay(sphereHitPt);
+                        ray3 sphereNormal = c->getNormal(sphereHitPt);
+                        ray3 rayToCamera = camera.rayToCamera(sphereHitPt);
+                        cv::Vec3b ambientComponent = c->ambient(light.getColour());
+                        cv::Vec3b diffuseComponent = c->diffuse(sphereNormal, rayToLight, light.getColour());
+                        cv::Vec3b specularComponent = c->specular(sphereNormal, rayToLight, rayToCamera, light.getColour());
+                        cv::Vec3b illumination = diffuseComponent + ambientComponent + specularComponent;
+                        image(row, col) = illumination;
+                    } else if(Plane* b = dynamic_cast<Plane*>(scene[indexPriorityOfObject]))
+                    {
+                        float planePt = b->intersectRayValue(ray);
+                        vec3 planeHitPt = b->getIntersectPoint(ray, planePt);
+                        ray3 rayToLight = light.generateRay(planeHitPt);
+                        ray3 planeNormal = b->getNormal(planeHitPt);
+                        ray3 rayToCamera = camera.rayToCamera(planeHitPt);
+                        cv::Vec3b ambientComponent = b->ambient(light.getColour());
+                        cv::Vec3b diffuseComponent = b->diffuse(planeNormal, rayToLight, light.getColour());
+                        cv::Vec3b specularComponent = b->specular(planeNormal, rayToLight, rayToCamera, light.getColour());
+                        cv::Vec3b illumination = diffuseComponent + ambientComponent;
+                        image(row, col) = illumination;
+                    }
+                }
             }
+
+
+//            if(floorPlane.intersectRay(ray))
+//            {
+//                image(row, col) = floorPlane.getColour();
+//            }
+//            if(sphere.intersectRay(ray))
+//            {
+//                float spherePt = sphere.intersectRayValue(ray);
+//                vec3 sphereHitPt = sphere.getIntersectPoint(ray, spherePt);
+//                ray3 rayToLight = light.generateRay(sphereHitPt);
+//                ray3 sphereNormal = sphere.getNormal(sphereHitPt);
+//                ray3 rayToCamera = camera.rayToCamera(sphereHitPt);
+//                cv::Vec3b ambientComponent = sphere.ambient(light.getColour());
+//                cv::Vec3b diffuseComponent = sphere.diffuse(sphereNormal, rayToLight, light.getColour());
+//                cv::Vec3b specularComponent = sphere.specular(sphereNormal, rayToLight, rayToCamera, light.getColour());
+//                cv::Vec3b illumination = diffuseComponent + ambientComponent + specularComponent;
+//                image(row, col) = illumination;
+
+//            }
        }
     }
     

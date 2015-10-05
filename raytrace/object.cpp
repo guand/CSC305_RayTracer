@@ -1,8 +1,8 @@
 #include "object.h"
 
-Colour Object::ambient()
+Colour Object::ambient(Colour lightColour)
 {
-    Colour ambientComponent = this->_ka * this->_colour;
+    Colour ambientComponent = (this->_colour).mul(lightColour);
     return ambientComponent;
 }
 
@@ -10,14 +10,14 @@ Colour Object::diffuse(ParametrizedLine<float, 3> const &normalRay, Parametrized
 {
     float dotCalculation = normalRay.direction().dot(lightRay.direction());
     float dot = dotCalculation < 0 ? 0.0f : dotCalculation;
-    Colour diffuseComponent = this->_kd * lightColour * dot;
+    Colour diffuseComponent = (this->_kd).mul(lightColour) * dot;
     return diffuseComponent;
 }
 
- Colour Object::specular(ParametrizedLine<float, 3> const &normalRay, ParametrizedLine<float, 3> const &lightRay, ParametrizedLine<float, 3> const &rayToCamera,  Colour lightColour)
+ Colour Object::specular(ParametrizedLine<float, 3> const &normalRay, ParametrizedLine<float, 3> const &lightRay, ParametrizedLine<float, 3> const &rayToCamera, Colour lightColour)
  {
-    vec3 reflectedRayOfLight = 2 * (lightRay.direction().dot(normalRay.direction())) * normalRay.direction() - lightRay.direction();
-    Colour specularComponent = this->_ks * lightColour * pow(reflectedRayOfLight.dot(rayToCamera.direction()), this->_n);
+    vec3 reflectedRayOfLight = 2.0f * (lightRay.direction().dot(normalRay.direction())) * normalRay.direction() - lightRay.direction();
+    Colour specularComponent = (this->_ks).mul(lightColour) * pow(max(0.0f, reflectedRayOfLight.dot(rayToCamera.direction())), this->_n);
     return specularComponent;
  }
 

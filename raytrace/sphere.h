@@ -12,13 +12,13 @@ using namespace Eigen;
 class Sphere: public Object
 {
 public:
-    typedef cv::Vec3b Colour;
+    typedef cv::Vec3f Coefficient;
 
-    Sphere(vec3 const& c, float const& r, Colour const& colour) :
+    Sphere(vec3 const& c, float const& r, Coefficient const& coefficient) :
         _mCentre(c),
         _mNormal(c),
         _mRadius(r),
-        Object(colour)
+        Object(coefficient)
     { }
 
     ~Sphere();
