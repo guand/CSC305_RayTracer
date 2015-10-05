@@ -99,16 +99,19 @@ int main(int, char**){
     
     /// Define camera, light, and image plane
 
-    Camera camera(vec3(0,0,-2));
-    Light light(vec3(-4, -4, 5), white());
-    ImagePlane plane(vec3(-1,-1,-1), vec3(1,1,1), image.rows, image.cols);
+    Camera camera(vec3(0,-1,-6));
+    Light light(vec3(-4, 4, 5), white());
+    ImagePlane plane(vec3(-2,-2,-1), vec3(2,2,1), image.rows, image.cols);
 
     /// Define sphere and plane
     Sphere sphere(vec3(0,0,1), 0.4f, Coefficient(0.5f, 0.0f, 0.0f));
-    Plane floorPlane(vec3(1, 0, 0), vec3(1.5f, 0, 0), Coefficient(0.0f, 0.0f, 0.5f));
+    Sphere sphere2(vec3(0,1,1), 0.4f, Coefficient(0.5f, 0.25f, 0.25f));
+    Plane floorPlane(vec3(1, 0, 0), vec3(1.5f, 0, 0), Coefficient(0.0f, 0.0f, 0.4f));
+    floorPlane.setKd(Coefficient(0.2f, 0.2f, 0.2f));
     vector<Object*> scene;
-    scene.push_back(&floorPlane);
-    scene.push_back(&sphere);
+    scene.push_back(dynamic_cast<Object*>(&floorPlane));
+    scene.push_back(dynamic_cast<Object*>(&sphere));
+    scene.push_back(dynamic_cast<Object*>(&sphere2));
     float accuracy = 0.00000001;
 
     for (int row = 0; row < image.rows; ++row) {
@@ -157,26 +160,6 @@ int main(int, char**){
                     }
                 }
             }
-
-
-//            if(floorPlane.intersectRay(ray))
-//            {
-//                image(row, col) = floorPlane.getColour();
-//            }
-//            if(sphere.intersectRay(ray))
-//            {
-//                float spherePt = sphere.intersectRayValue(ray);
-//                vec3 sphereHitPt = sphere.getIntersectPoint(ray, spherePt);
-//                ray3 rayToLight = light.generateRay(sphereHitPt);
-//                ray3 sphereNormal = sphere.getNormal(sphereHitPt);
-//                ray3 rayToCamera = camera.rayToCamera(sphereHitPt);
-//                cv::Vec3b ambientComponent = sphere.ambient(light.getColour());
-//                cv::Vec3b diffuseComponent = sphere.diffuse(sphereNormal, rayToLight, light.getColour());
-//                cv::Vec3b specularComponent = sphere.specular(sphereNormal, rayToLight, rayToCamera, light.getColour());
-//                cv::Vec3b illumination = diffuseComponent + ambientComponent + specularComponent;
-//                image(row, col) = illumination;
-
-//            }
        }
     }
     

@@ -32,6 +32,10 @@ public:
     float getN() { return _n; }
     Coefficient getCoefficient() { return _colour; }
 
+    /// setters
+    void setKd(Coefficient newKd) { _kd = newKd; }
+    void setKs(Coefficient newKs) { _ks = newKs; }
+
 
 protected:
     Coefficient _colour;
