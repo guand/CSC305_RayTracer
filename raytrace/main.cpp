@@ -54,6 +54,12 @@ struct MyImage{
     }
 };
 
+/**
+ * @brief priorityObjectIndex
+ * @param intersectionObjects
+ * @return Int
+ * Returns the winning index of which object to paint for each pixel
+ */
 int priorityObjectIndex(vector<float> intersectionObjects)
 {
     int minimumValue;
@@ -109,18 +115,23 @@ int main(int, char**){
     Sphere sphere(vec3(0,0,-1), 0.4f, Coefficient(0.5f, 0.0f, 0.0f), TEXTURE);
     Sphere sphere2(vec3(-0.8f,1,-1), 0.5f, Coefficient(0.5f, 0.25f, 0.25f), NO_TEXTURE);
     Plane floorPlane(vec3(1, 0, 0), vec3(1, 0, 0), Coefficient(1, 1, 1), TEXTURE);
+    floorPlane.setKd(Coefficient(0.2f, 0.2f, 0.2f));
     Plane rightPlane(vec3(1, 3, 0), vec3(1, 60, 0), Coefficient(0, 0.392f, 0), NO_TEXTURE);
     Plane leftPlane(vec3(1, -2, 0), vec3(1, -190, 0), Coefficient(0, 0, 1), NO_TEXTURE);
     Plane wallPlane(vec3(1, 0, 3), vec3(1, 0, 20), Coefficient(0.176f, 0.322f, 0.627), NO_TEXTURE);
-    floorPlane.setKd(Coefficient(0.2f, 0.2f, 0.2f));
+    Plane ceilingPlane(vec3(-4.5f, 0, -1), vec3(-15, 0, -1), Coefficient(0.176f, 0.322f, 0.627), NO_TEXTURE);
+    /// Define Object vector to push all the spheres and planes into
     vector<Object*> scene;
     scene.push_back(dynamic_cast<Object*>(&floorPlane));
     scene.push_back(dynamic_cast<Object*>(&rightPlane));
     scene.push_back(dynamic_cast<Object*>(&leftPlane));
     scene.push_back(dynamic_cast<Object*>(&wallPlane));
+    scene.push_back(dynamic_cast<Object*>(&ceilingPlane));
     scene.push_back(dynamic_cast<Object*>(&sphere));
     scene.push_back(dynamic_cast<Object*>(&sphere2));
+    /// for floating point
     float accuracy = 0.00000001;
+    /// sets the shade coefficient for shadows
     float shade = 0.5f;
     for (int row = 0; row < image.rows; ++row) {
         for (int col = 0; col < image.cols; ++col) {
@@ -128,11 +139,12 @@ int main(int, char**){
             vec3 pt = plane.generatePixelPos(row, col);
             ray3 ray = camera.generateRay(pt);
             vector<float> intersections;
+            /// push into intersections vector
             for(int i = 0; i < scene.size(); ++i)
             {
                 intersections.push_back(scene.at(i)->intersectRayValue(ray));
             }
-
+            /// get winning index of the object to paint
             int indexPriorityOfObject = priorityObjectIndex(intersections);
             if(indexPriorityOfObject == -1)
             {
@@ -141,6 +153,7 @@ int main(int, char**){
             {
                 if(intersections.at(indexPriorityOfObject) > accuracy)
                 {
+                    /// go through sphere items
                     if(Sphere* c = dynamic_cast<Sphere*>(scene[indexPriorityOfObject]))
                     {
                         bool shadow = false;
@@ -153,6 +166,7 @@ int main(int, char**){
                             {
                                 if(e != c)
                                 {
+                                    /// check if object is in shadow
                                     if(e->intersectRayForShadow(rayToLight))
                                     {
                                         shadow = true;
@@ -161,6 +175,7 @@ int main(int, char**){
 
                             }
                         }
+                        /// perform phong shadings
                         ray3 sphereNormal = c->getNormal(sphereHitPt);
                         ray3 rayToCamera = camera.rayToCamera(sphereHitPt);
                         cv::Vec3b ambientComponent = c->ambient(light.getColour());
@@ -168,6 +183,7 @@ int main(int, char**){
                         cv::Vec3b specularComponent = c->specular(sphereNormal, rayToLight, rayToCamera, light.getColour());
                         cv::Vec3b illumination = diffuseComponent + ambientComponent + specularComponent;
                         cv::Vec3b textureComponent = c->textureValue(sphereHitPt);
+                        /// check if sphere has texture
                         if(c->getSpecial() == TEXTURE)
                         {
                             illumination = textureComponent + diffuseComponent + specularComponent;
@@ -182,6 +198,7 @@ int main(int, char**){
                             }
                         }
                         image(row, col) = illumination;
+                        /// go through plane objects
                     } else if(Plane* b = dynamic_cast<Plane*>(scene[indexPriorityOfObject]))
                     {
                         bool shadow = false;
@@ -190,6 +207,7 @@ int main(int, char**){
                         ray3 rayToLight = light.generateRay(planeHitPt);
                         for(int i = 0; i < scene.size(); ++i)
                         {
+                            /// check if plane is in shadow from sphere
                             if(Sphere* d = dynamic_cast<Sphere*>(scene[i]))
                             {
                                 if(d->intersectRayForShadow(rayToLight))
@@ -198,12 +216,14 @@ int main(int, char**){
                                 }
                             }
                         }
+                        /// perform phong shading
                         ray3 planeNormal = b->getNormal(planeHitPt);
                         ray3 rayToCamera = camera.rayToCamera(planeHitPt);
                         cv::Vec3b ambientComponent = b->ambient(light.getColour());
                         cv::Vec3b diffuseComponent = b->diffuse(planeNormal, rayToLight, light.getColour());
 //                        cv::Vec3b specularComponent = b->specular(planeNormal, rayToLight, rayToCamera, light.getColour());
                         cv::Vec3b illumination = diffuseComponent + ambientComponent;
+                        /// check if floor has a texture
                         if(b->getSpecial() == TEXTURE)
                         {
                             illumination = light.getColour().mul(b->checkerBoard(planeHitPt));

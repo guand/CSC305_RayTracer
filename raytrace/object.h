@@ -38,6 +38,7 @@ public:
 
 
 protected:
+    // Create variables for Parent Class
     Coefficient _colour;
     Coefficient _kd = Coefficient(0.5, 0.5, 0.5);
     Coefficient _ks = Coefficient(0.4, 0.4, 0.4);
