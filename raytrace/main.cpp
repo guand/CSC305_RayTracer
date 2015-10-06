@@ -101,17 +101,23 @@ int main(int, char**){
     
     /// Define camera, light, and image plane
 
-    Camera camera(vec3(0,-1,-6));
-    Light light(vec3(-4.0f, 3.0f, 1.0f), white());
-    ImagePlane plane(vec3(-2,-2,-1), vec3(2,2,1), image.rows, image.cols);
+    Camera camera(vec3(0,-1,-8));
+    Light light(vec3(-3.0f, 2.0f, -1), white());
+    ImagePlane plane(vec3(-4,-4,-1), vec3(4,4,1), image.rows, image.cols);
 
     /// Define sphere and plane
-    Sphere sphere(vec3(0,0,1), 0.4f, Coefficient(0.5f, 0.0f, 0.0f), TEXTURE);
-    Sphere sphere2(vec3(-0.8f,1,1), 0.5f, Coefficient(0.5f, 0.25f, 0.25f), NO_TEXTURE);
-    Plane floorPlane(vec3(1, 0, 0), vec3(1.6f, 0, 0), Coefficient(1, 1, 1), TEXTURE);
+    Sphere sphere(vec3(0,0,-1), 0.4f, Coefficient(0.5f, 0.0f, 0.0f), TEXTURE);
+    Sphere sphere2(vec3(-0.8f,1,-1), 0.5f, Coefficient(0.5f, 0.25f, 0.25f), NO_TEXTURE);
+    Plane floorPlane(vec3(1, 0, 0), vec3(1, 0, 0), Coefficient(1, 1, 1), TEXTURE);
+    Plane rightPlane(vec3(1, 3, 0), vec3(1, 60, 0), Coefficient(0, 0.392f, 0), NO_TEXTURE);
+    Plane leftPlane(vec3(1, -2, 0), vec3(1, -190, 0), Coefficient(0, 0, 1), NO_TEXTURE);
+    Plane wallPlane(vec3(1, 0, 3), vec3(1, 0, 20), Coefficient(0.176f, 0.322f, 0.627), NO_TEXTURE);
     floorPlane.setKd(Coefficient(0.2f, 0.2f, 0.2f));
     vector<Object*> scene;
     scene.push_back(dynamic_cast<Object*>(&floorPlane));
+    scene.push_back(dynamic_cast<Object*>(&rightPlane));
+    scene.push_back(dynamic_cast<Object*>(&leftPlane));
+    scene.push_back(dynamic_cast<Object*>(&wallPlane));
     scene.push_back(dynamic_cast<Object*>(&sphere));
     scene.push_back(dynamic_cast<Object*>(&sphere2));
     float accuracy = 0.00000001;

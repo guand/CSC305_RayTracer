@@ -47,7 +47,7 @@ vec3 Plane::getIntersectPoint(ParametrizedLine<float, 3> const &ray, float pt)
 
 Coefficient Plane::checkerBoard(vec3 pt)
 {
-    int square = (int)floor(pt[1]) + (int)floor(pt[2]);
+    int square = (int)floor(pt.y()) + (int)floor(pt.z());
     if((square % 2) == 0)
     {
         return Coefficient(0, 0, 0);
