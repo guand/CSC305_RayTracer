@@ -108,12 +108,13 @@ int main(int, char**){
     /// Define camera, light, and image plane
 
     Camera camera(vec3(0,-1,-8));
-    Light light(vec3(-3.0f, 2.0f, -1), white());
+    Light light(vec3(0, 0, -5), white());
     ImagePlane plane(vec3(-4,-4,-1), vec3(4,4,1), image.rows, image.cols);
 
     /// Define sphere and plane
     Sphere sphere(vec3(0,0,-1), 0.4f, Coefficient(0.5f, 0.0f, 0.0f), TEXTURE);
     Sphere sphere2(vec3(-0.8f,1,-1), 0.5f, Coefficient(0.5f, 0.25f, 0.25f), NO_TEXTURE);
+    Sphere sphere3(vec3(0,1,-3), 0.5f, Coefficient(0.34f, 0.75f, 0.69f), NO_TEXTURE);
     Plane floorPlane(vec3(1, 0, 0), vec3(1, 0, 0), Coefficient(1, 1, 1), TEXTURE);
     floorPlane.setKd(Coefficient(0.2f, 0.2f, 0.2f));
     Plane rightPlane(vec3(1, 3, 0), vec3(1, 60, 0), Coefficient(0, 0.392f, 0), NO_TEXTURE);
@@ -129,6 +130,7 @@ int main(int, char**){
     scene.push_back(dynamic_cast<Object*>(&ceilingPlane));
     scene.push_back(dynamic_cast<Object*>(&sphere));
     scene.push_back(dynamic_cast<Object*>(&sphere2));
+    scene.push_back(dynamic_cast<Object*>(&sphere3));
     /// for floating point
     float accuracy = 0.00000001;
     /// sets the shade coefficient for shadows

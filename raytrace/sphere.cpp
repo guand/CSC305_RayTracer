@@ -80,7 +80,7 @@ float Sphere::intersectRayValue(ParametrizedLine<float, 3> const &ray)
     float t0 = (-b - sqrt(discriminant));
     float t1 = (-b + sqrt(discriminant));
     // if t1 is greater than t0 than set t1 value to t0 as we care only for the closest intersection
-    if(t1 > t0)
+    if(t1 < t0)
         t0 = t1;
     return t0;
 }
