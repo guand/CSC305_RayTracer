@@ -25,6 +25,8 @@ Coefficient objectBlue() { return Coefficient(1.0f, 0.0f, 0.0f); }
 Coefficient objectWhite() { return Coefficient(1.0f, 1.0f, 1.0f); }
 Coefficient objectBlack() { return Coefficient(0.0f, 0.0f, 0.0f); }
 
+enum Special { TEXTURE, NO_TEXTURE };
+
 struct MyImage{
     /// Data (not private for convenience)
     int cols = 600;
@@ -104,9 +106,9 @@ int main(int, char**){
     ImagePlane plane(vec3(-2,-2,-1), vec3(2,2,1), image.rows, image.cols);
 
     /// Define sphere and plane
-    Sphere sphere(vec3(0,0,1), 0.4f, Coefficient(0.5f, 0.0f, 0.0f), 1);
-    Sphere sphere2(vec3(-0.8f,1,1), 0.5f, Coefficient(0.5f, 0.25f, 0.25f), 0);
-    Plane floorPlane(vec3(1, 0, 0), vec3(1.6f, 0, 0), Coefficient(1, 1, 1), 1);
+    Sphere sphere(vec3(0,0,1), 0.4f, Coefficient(0.5f, 0.0f, 0.0f), TEXTURE);
+    Sphere sphere2(vec3(-0.8f,1,1), 0.5f, Coefficient(0.5f, 0.25f, 0.25f), NO_TEXTURE);
+    Plane floorPlane(vec3(1, 0, 0), vec3(1.6f, 0, 0), Coefficient(1, 1, 1), TEXTURE);
     floorPlane.setKd(Coefficient(0.2f, 0.2f, 0.2f));
     vector<Object*> scene;
     scene.push_back(dynamic_cast<Object*>(&floorPlane));
@@ -160,12 +162,12 @@ int main(int, char**){
                         cv::Vec3b specularComponent = c->specular(sphereNormal, rayToLight, rayToCamera, light.getColour());
                         cv::Vec3b illumination = diffuseComponent + ambientComponent + specularComponent;
                         cv::Vec3b textureComponent = c->textureValue(sphereHitPt);
-                        if(c->getSpecial() == 1)
+                        if(c->getSpecial() == TEXTURE)
                         {
                             illumination = textureComponent + diffuseComponent + specularComponent;
                         }
                         if(shadow)
-                        {   if(c->getSpecial() == 1)
+                        {   if(c->getSpecial() == TEXTURE)
                             {
                                 illumination = textureComponent * shade;
                             } else
@@ -196,14 +198,14 @@ int main(int, char**){
                         cv::Vec3b diffuseComponent = b->diffuse(planeNormal, rayToLight, light.getColour());
 //                        cv::Vec3b specularComponent = b->specular(planeNormal, rayToLight, rayToCamera, light.getColour());
                         cv::Vec3b illumination = diffuseComponent + ambientComponent;
-                        if(b->getSpecial() == 1)
+                        if(b->getSpecial() == TEXTURE)
                         {
                             illumination = light.getColour().mul(b->checkerBoard(planeHitPt));
                         }
 
                         if(shadow)
                         {
-                            if(b->getSpecial() == 1)
+                            if(b->getSpecial() == TEXTURE)
                             {
                                 illumination = illumination * shade;
                             } else
