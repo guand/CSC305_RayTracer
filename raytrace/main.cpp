@@ -104,8 +104,8 @@ int main(int, char**){
     ImagePlane plane(vec3(-2,-2,-1), vec3(2,2,1), image.rows, image.cols);
 
     /// Define sphere and plane
-    Sphere sphere(vec3(0,0,1), 0.4f, Coefficient(0.5f, 0.0f, 0.0f));
-    Sphere sphere2(vec3(-1,0,1), 0.4f, Coefficient(0.5f, 0.25f, 0.25f));
+    Sphere sphere(vec3(0,0,1), 0.4f, Coefficient(0.5f, 0.0f, 0.0f), 1);
+    Sphere sphere2(vec3(-0.8f,1,1), 0.5f, Coefficient(0.5f, 0.25f, 0.25f), 0);
     Plane floorPlane(vec3(1, 0, 0), vec3(1.6f, 0, 0), Coefficient(1, 1, 1), 1);
     floorPlane.setKd(Coefficient(0.2f, 0.2f, 0.2f));
     vector<Object*> scene;
@@ -159,9 +159,19 @@ int main(int, char**){
                         cv::Vec3b diffuseComponent = c->diffuse(sphereNormal, rayToLight, light.getColour());
                         cv::Vec3b specularComponent = c->specular(sphereNormal, rayToLight, rayToCamera, light.getColour());
                         cv::Vec3b illumination = diffuseComponent + ambientComponent + specularComponent;
-                        if(shadow)
+                        cv::Vec3b textureComponent = c->textureValue(sphereHitPt);
+                        if(c->getSpecial() == 1)
                         {
-                            illumination = ambientComponent * shade;
+                            illumination = textureComponent + diffuseComponent + specularComponent;
+                        }
+                        if(shadow)
+                        {   if(c->getSpecial() == 1)
+                            {
+                                illumination = textureComponent * shade;
+                            } else
+                            {
+                                illumination = ambientComponent * shade;
+                            }
                         }
                         image(row, col) = illumination;
                     } else if(Plane* b = dynamic_cast<Plane*>(scene[indexPriorityOfObject]))

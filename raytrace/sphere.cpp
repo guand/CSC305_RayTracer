@@ -82,3 +82,12 @@ ParametrizedLine<float, 3> Sphere::getNormal(vec3 pt)
     return ray3(origin, direction);
 }
 
+Colour Sphere::textureValue(vec3 pt)
+{
+    float phi = acos((pt.z() - this->_mCentre.z())/this->_mRadius);
+    float theta = atan2(pt.y() - this->_mCentre.y(), pt.x() - this->_mCentre.x());
+    float u = phi / (2 * M_PI);
+    float v = (M_PI - theta) / M_PI;
+    return this->image.at<Colour>((int)(image.cols*u), (int)(image.rows*v));
+}
+
