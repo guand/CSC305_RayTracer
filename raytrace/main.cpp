@@ -106,7 +106,7 @@ int main(int, char**){
     /// Define sphere and plane
     Sphere sphere(vec3(0,0,1), 0.4f, Coefficient(0.5f, 0.0f, 0.0f));
     Sphere sphere2(vec3(-1,0,1), 0.4f, Coefficient(0.5f, 0.25f, 0.25f));
-    Plane floorPlane(vec3(1, 0, 0), vec3(1.6f, 0, 0), Coefficient(0.0f, 0.0f, 0.4f));
+    Plane floorPlane(vec3(1, 0, 0), vec3(1.6f, 0, 0), Coefficient(1, 1, 1), 1);
     floorPlane.setKd(Coefficient(0.2f, 0.2f, 0.2f));
     vector<Object*> scene;
     scene.push_back(dynamic_cast<Object*>(&floorPlane));
@@ -174,7 +174,7 @@ int main(int, char**){
                         {
                             if(Sphere* d = dynamic_cast<Sphere*>(scene[i]))
                             {
-                                if(d->intersectRay(rayToLight))
+                                if(d->intersectRayForShadow(rayToLight))
                                 {
                                     shadow = true;
                                 }
@@ -186,9 +186,20 @@ int main(int, char**){
                         cv::Vec3b diffuseComponent = b->diffuse(planeNormal, rayToLight, light.getColour());
 //                        cv::Vec3b specularComponent = b->specular(planeNormal, rayToLight, rayToCamera, light.getColour());
                         cv::Vec3b illumination = diffuseComponent + ambientComponent;
+                        if(b->getSpecial() == 1)
+                        {
+                            illumination = light.getColour().mul(b->checkerBoard(planeHitPt));
+                        }
+
                         if(shadow)
                         {
-                            illumination = ambientComponent * shade;
+                            if(b->getSpecial() == 1)
+                            {
+                                illumination = illumination * shade;
+                            } else
+                            {
+                                illumination = ambientComponent * shade;
+                            }
                         }
                         image(row, col) = illumination;
                     }

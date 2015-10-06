@@ -45,5 +45,15 @@ vec3 Plane::getIntersectPoint(ParametrizedLine<float, 3> const &ray, float pt)
     return hitPoint;
 }
 
+Coefficient Plane::checkerBoard(vec3 pt)
+{
+    int square = (int)floor(pt[1]) + (int)floor(pt[2]);
+    if((square % 2) == 0)
+    {
+        return Coefficient(0, 0, 0);
+    }
+    return Coefficient(1, 1, 1);
+}
+
 
 
