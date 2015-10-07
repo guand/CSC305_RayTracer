@@ -22,6 +22,7 @@ public:
 
     /// getter
     Colour getColour() { return _mColour; }
+    vec3 getPosition() { return _mPosition; }
 
 private:
     Colour _mColour;

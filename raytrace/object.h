@@ -3,6 +3,7 @@
 
 #pragma once
 #include "icg_common.h"
+#include "light.h"
 #include <Eigen/Geometry>
 #include <math.h>
 
@@ -23,8 +24,8 @@ public:
     /// Phong Lighting model
     Colour ambient(Colour lightColour);
     float diffuseDot(ParametrizedLine<float, 3> const &normalRay, ParametrizedLine<float, 3> const &lightRay);
-    Colour diffuse(ParametrizedLine<float, 3> const &normalRay, ParametrizedLine<float, 3> const &lightRay, Colour lightColour);
-    Colour specular(ParametrizedLine<float, 3> const &normalRay, ParametrizedLine<float, 3> const &lightRay, ParametrizedLine<float, 3> const &rayToCamera, Colour lightColour);
+    Colour diffuse(ParametrizedLine<float, 3> const &normalRay, vec3 sphereHitPt, vector<Light> lightScene);
+    Colour specular(ParametrizedLine<float, 3> const &normalRay, vec3 sphereHitPt, ParametrizedLine<float, 3> const &rayToCamera, vector<Light> lightScene);
 
     /// getters
     Coefficient getKd() { return _kd; }
@@ -40,10 +41,10 @@ public:
 protected:
     // Create variables for Parent Class
     Coefficient _colour;
-    Coefficient _kd = Coefficient(0.5, 0.5, 0.5);
+    Coefficient _kd = Coefficient(0.2, 0.2, 0.2);
     Coefficient _ks = Coefficient(0.4, 0.4, 0.4);
     float _pr = 1;
-    float _n = 12;
+    float _n = 6;
     float _IOR = 1;
 };
 
