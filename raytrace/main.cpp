@@ -97,8 +97,18 @@ int priorityObjectIndex(vector<float> intersectionObjects)
     return -1;
 }
 
+Colour colourIt(ParametrizedLine<float, 3> const &reflectedRay, vector<Object*> scene, Colour light)
+{
+    vector<float> reflectedIntersections;
 
-
+    for(int k = 0; k < scene.size(); ++k)
+    {
+        reflectedIntersections.push_back(scene.at(k)->intersectRayValue(reflectedRay));
+    }
+    int priorityReflectionIndex = priorityObjectIndex(reflectedIntersections);
+    Colour reflection_colour = scene.at(priorityReflectionIndex)->ambient(light);
+    return reflection_colour;
+}
 
 int main(int, char**){
     /// Rays and vectors represented with Eigen
@@ -110,35 +120,40 @@ int main(int, char**){
     /// Define camera, light, and image plane
 
     Camera camera(vec3(0,-1,-8));
-    Light light(vec3(-5, -1, -1), white());
-    Light light2(vec3(-1, 2, -1), white());
-    Light light3(vec3(-5, 0.2f, -1), white());
-    Light light4(vec3(-5, 0.3f, -1), white());
+    Light light(vec3(-3.5f, -2, -1), white());
+    Light light2(vec3(-3.5f, 0, -1), white());
+    Light light3(vec3(-3.5f, 2, -1), white());
+    Light light4(vec3(-3.5f, 0, -3), white());
+    Light light5(vec3(-3.5f, 0, 1), white());
     ImagePlane plane(vec3(-4,-4,-1), vec3(4,4,1), image.rows, image.cols);
 
     /// Define sphere and plane
     Sphere sphere(vec3(0,0,-1), 0.4f, Coefficient(0.5f, 0.0f, 0.0f), TEXTURE);
     Sphere sphere2(vec3(-0.8f,-1,-1), 0.5f, Coefficient(0.5f, 0.25f, 0.25f), NO_TEXTURE);
-    Sphere sphere3(vec3(0,-1.5f,-3), 0.5f, Coefficient(0.34f, 0.75f, 0.69f), REFLECTION);
+    Sphere sphere3(vec3(0,-1,-3), 0.5f, Coefficient(0.34f, 0.75f, 0.69f), REFLECTION);
     Plane floorPlane(vec3(1, 0, 0), vec3(1, 0, 0), Coefficient(1, 1, 1), TEXTURE);
     floorPlane.setKd(Coefficient(0.2f, 0.2f, 0.2f));
     Plane rightPlane(vec3(1, 3, 0), vec3(1, 60, 0), Coefficient(0, 0.392f, 0), NO_TEXTURE);
     Plane leftPlane(vec3(1, -2, 0), vec3(1, -190, 0), Coefficient(0, 0, 1), NO_TEXTURE);
     Plane wallPlane(vec3(1, 0, 3), vec3(1, 0, 20), Coefficient(0.176f, 0.322f, 0.627), NO_TEXTURE);
-    Plane ceilingPlane(vec3(-4.5f, 0, -1), vec3(-15, 0, -1), Coefficient(0.176f, 0.322f, 0.627), NO_TEXTURE);
+    Plane ceilingPlane(vec3(-3.5f, 0, -1), vec3(15, 0, -1), Coefficient(0.176f, 0.322f, 0.627), NO_TEXTURE);
     /// Define Object vector to push all the spheres and planes into
     vector<Object*> scene;
+    /// Create Area lights
     vector<Light> lightScene;
     lightScene.push_back(light);
     lightScene.push_back(light2);
+    lightScene.push_back(light3);
+    lightScene.push_back(light4);
+    lightScene.push_back(light5);
     scene.push_back(dynamic_cast<Object*>(&floorPlane));
     scene.push_back(dynamic_cast<Object*>(&rightPlane));
     scene.push_back(dynamic_cast<Object*>(&leftPlane));
     scene.push_back(dynamic_cast<Object*>(&wallPlane));
     scene.push_back(dynamic_cast<Object*>(&ceilingPlane));
     scene.push_back(dynamic_cast<Object*>(&sphere));
-//    scene.push_back(dynamic_cast<Object*>(&sphere2));
-//    scene.push_back(dynamic_cast<Object*>(&sphere3));
+    scene.push_back(dynamic_cast<Object*>(&sphere2));
+    scene.push_back(dynamic_cast<Object*>(&sphere3));
     /// for floating point
     float accuracy = 0.00000001;
     /// sets the shade coefficient for shadows
@@ -176,11 +191,10 @@ int main(int, char**){
                                 if(e != c)
                                 {
                                     /// check if object is in shadow
-                                    for(auto & element : lightScene) {
-
+                                    for(auto & element : lightScene)
+                                    {
                                         if(e->intersectRayForShadow(element.generateRay(sphereHitPt)))
                                         {
-
                                             shadow = true;
                                         }
                                     }
@@ -200,6 +214,27 @@ int main(int, char**){
                         if(c->getSpecial() == TEXTURE)
                         {
                             illumination = textureComponent + diffuseComponent + specularComponent;
+                        } else if(c->getSpecial() == REFLECTION)
+                        {
+                            vec3 reflection = sphereHitPt - 2 * (sphereHitPt.dot(sphereNormal.direction())) * sphereNormal.direction();
+                            reflection.normalize();
+                            ray3 reflectionRay(sphereHitPt, reflection);
+                            vector<float> reflectedIntersections;
+
+                            for(int k = 0; k < scene.size(); ++k)
+                            {
+                                reflectedIntersections.push_back(scene.at(k)->intersectRayValue(reflectionRay));
+                            }
+
+                            int priorityReflectionIndex = priorityObjectIndex(reflectedIntersections);
+                            Colour reflection_colour;
+                            if(priorityReflectionIndex != -1) {
+                                reflection_colour = colourIt(ray3(sphereHitPt + reflection * 0.0001f, reflection), scene, light.getColour());
+                            } else {
+                                reflection_colour = black();
+                            }
+
+                            illumination = reflection_colour + diffuseComponent + specularComponent;
                         }
                         if(shadow)
                         {   if(c->getSpecial() == TEXTURE)

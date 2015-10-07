@@ -41,10 +41,10 @@ public:
 protected:
     // Create variables for Parent Class
     Coefficient _colour;
-    Coefficient _kd = Coefficient(0.2, 0.2, 0.2);
-    Coefficient _ks = Coefficient(0.4, 0.4, 0.4);
+    Coefficient _kd = Coefficient(0.1, 0.1, 0.1);
+    Coefficient _ks = Coefficient(0.3, 0.3, 0.3);
     float _pr = 1;
-    float _n = 6;
+    float _n = 10;
     float _IOR = 1;
 };
 

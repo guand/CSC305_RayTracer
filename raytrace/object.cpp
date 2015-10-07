@@ -33,6 +33,7 @@ Colour Object::diffuse(ParametrizedLine<float, 3> const &normalRay, vec3 sphereH
         Colour diffuseComponent = (this->_kd).mul(lightScene.at(i).getColour()) * dot;
         totalDiffuseComponent += diffuseComponent;
     }
+
     return totalDiffuseComponent;
 }
 
@@ -56,6 +57,7 @@ Colour Object::specular(ParametrizedLine<float, 3> const &normalRay, vec3 sphere
         Colour specularComponent = (this->_ks).mul(lightScene.at(i).getColour()) * pow(max(0.0f, reflectedRayOfLight.dot(rayToCamera.direction())), this->_n);
         totalSpecularComponent += specularComponent;
     }
+
     return totalSpecularComponent;
 }
 
